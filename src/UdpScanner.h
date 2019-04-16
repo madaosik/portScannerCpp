@@ -15,6 +15,8 @@ class UdpScanner : public Scanner {
     public:
         UdpScanner(vector<int>& ports);
         State scan_port(int port);
+    private:
+        unsigned short check_sum(unsigned short *buf, int n_words);
 };
 
 

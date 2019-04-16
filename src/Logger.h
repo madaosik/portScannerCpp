@@ -16,6 +16,7 @@ class Logger {
         static void error_exit(const string& error_msg);
         static void log_warning(const string& warning_msg);
         static void log_status(const string& status_msg, const string& var_content);
+    static void log_status(const string& status_msg);
     private:
         static bool is_debug();
         static bool debug_flag;

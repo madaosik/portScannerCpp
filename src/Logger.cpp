@@ -30,3 +30,9 @@ void Logger::log_status(const string& status_msg, const string& var_content) {
         cout << "\tINFO: " << status_msg << ": " << var_content << "\n";
     }
 }
+
+void Logger::log_status(const string& status_msg) {
+    if (is_debug()) {
+        cout << "\tINFO: " << status_msg  << "\n";
+    }
+}
