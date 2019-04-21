@@ -2,15 +2,7 @@
 // Created by Adam Láníček on 2019-04-01.
 //
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include "Argparser.h"
-#include "Logger.h"
-#include "TcpScanner.h"
-#include "UdpScanner.h"
-
-#define DEBUG false
+#include "main.h"
 
 int main (int argc, char **argv) {
     bool header_missing = true;
@@ -19,8 +11,7 @@ int main (int argc, char **argv) {
     vector<int>& tcpPorts = argsContainer.getTcpPorts();
 
     if (!tcpPorts.empty()) {
-        TcpScanner tcpScanner = TcpScanner(tcpPorts);
-        tcpScanner.set_host_ip(argsContainer.getHost());
+        TcpScanner tcpScanner = TcpScanner(tcpPorts, argsContainer);
         tcpScanner.print_header();
         header_missing = false;
         tcpScanner.run_scan();
@@ -30,8 +21,7 @@ int main (int argc, char **argv) {
 
     vector<int>& udpPorts = argsContainer.getUdpPorts();
     if (!udpPorts.empty()) {
-        UdpScanner udpScanner = UdpScanner(udpPorts);
-        udpScanner.set_host_ip(argsContainer.getHost());
+        UdpScanner udpScanner = UdpScanner(udpPorts, argsContainer);
         if (header_missing) { udpScanner.print_header(); }
         udpScanner.run_scan();
         udpScanner.print_results(std::string("/udp"));

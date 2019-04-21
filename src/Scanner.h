@@ -5,69 +5,91 @@
 #ifndef IPK_SCAN_SCANNER_H
 #define IPK_SCAN_SCANNER_H
 
-#include <vector>
+#include <iostream>
+#include <stdexcept>
+#include <cstdlib>
 #include <map>
-#include <string>
 
-#include <arpa/inet.h>
-#include <netdb.h>
+#include <cstring>
 #include <unistd.h>
-#include <stdio.h>
+
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <ifaddrs.h>
+#include <sys/ioctl.h>
 #include <netinet/ip.h>
+#include <netinet/ip6.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
 #include <netinet/udp.h>
+#include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
+#include <arpa/inet.h>
+#include <pcap.h>
+
+
+#include <sys/mman.h>
+#include <signal.h>
 
 #include "Logger.h"
+#include "Argparser.h"
 
-#define MAX_LEN 50
-#define DATAGRAM_SIZE 8192
-#define SRC_PORT 21
-#define SRC_IP "192.168.10.10"
+#define TIMEOUT 2
 
-enum State {OPEN,CLOSED,FILTERED};
-
-struct ipheader {
-    unsigned char      iph_ihl:5, iph_ver:4;
-    unsigned char      iph_tos;
-    unsigned short int iph_len;
-    unsigned short int iph_ident;
-    unsigned char      iph_flag;
-    unsigned short int iph_offset;
-    unsigned char      iph_ttl;
-    unsigned char      iph_protocol;
-    unsigned short int iph_chksum;
-    unsigned int       iph_sourceip;
-    unsigned int       iph_destip;
-};
-
-struct udpheader {
-    unsigned short int udph_srcport;
-    unsigned short int udph_destport;
-    unsigned short int udph_len;
-    unsigned short int udph_chksum;
-};
-// total udp header length: 8 bytes (=64 bits)
-
-//TODO: TCP HEADER DECLARATION
+enum State {OPEN,CLOSED,FILTERED,NOT_CHECKED};
 
 using namespace std;
 
+struct pseudoTcpHdr
+{
+    struct in_addr ip_src;
+    struct in_addr ip_dst;
+    u_char zeros;
+    u_char protocol;
+    u_short tcp_len;
+    struct tcphdr real_tcp;
+};
+
+struct pseudoUdpHdr
+{
+    struct in_addr ip_src;
+    struct in_addr ip_dst;
+    u_char zeros;
+    u_char protocol;
+    u_short udp_len;
+    struct udphdr real_udp;
+};
+
 class Scanner {
     public:
-        Scanner(vector<int> &port_vector);
+        Scanner(vector<int> &port_vector, ArgParser& args);
         void run_scan();
         virtual State scan_port(int port) = 0;
-        void set_host_ip(string& host);
+        void resolve_target_info();
         void print_header();
         void print_results(string protocol);
     private:
-        bool validate_ip(char *host);
-        string host_name;
+        //bool validate_ip(char *host);
+
     protected:
+        ArgParser &args;
+        void get_iface_name();
         map<State,string> state_map;
         map<int,State> results_map;
         vector<int>& ports;
-        char host_ip[16];
+        char host_name[20];
+        char host_ip[20];
+
+        struct addrinfo *candidates;
+        struct addrinfo *target;
+
+        struct ifaddrs *ifaddr;
+        struct ifaddrs *ifa;
+
+        void find_match_host_if_fam();
+        unsigned short check_sum(unsigned short *buf, int n_words);
+        in_port_t get_in_port(struct sockaddr *sa);
 };
 
 

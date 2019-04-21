@@ -13,8 +13,10 @@ using namespace std;
 
 class TcpScanner : public Scanner {
     public:
-        TcpScanner(vector<int>& ports);
+        TcpScanner(vector<int>& ports, ArgParser& args);
         State scan_port(int port);
+    private:
+        void create_tcp_header(char *packet, int port);
 };
 
 
