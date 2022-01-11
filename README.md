@@ -1,5 +1,4 @@
-# ipkproj_2_2019
-# Port scanner
+# Port scanner written in C++
 
 Program je napsan v jazyce C++ a zkompilovan a sestaven pomoci prikazu "make" v korenovem adresari.
 
